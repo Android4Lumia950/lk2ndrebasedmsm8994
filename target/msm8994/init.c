@@ -103,7 +103,8 @@ extern int platform_is_msm8994(void);
 void target_early_init(void)
 {
 
-	    //Relocate UEFI FB to the one used in LA platforms
+	//Relocate UEFI FB to the one used in LA platforms
+	memset((void *)0x03400000, 0, 0x00E10000);
 	writel(0x03400000, 0xFD915014);
 	writel(0x03400000, 0xFD917014);
 	//Flush 
