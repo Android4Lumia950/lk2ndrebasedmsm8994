@@ -257,7 +257,7 @@ void display_default_image_on_screen(void)
 
 	fbcon_clear_msg(y / FONT_HEIGHT, y / FONT_HEIGHT + 3 * scale_factor);
 
-	fbcon_puts_ln(WHITE, y, incr, true, xstr(BOARD));
-	fbcon_puts_ln(SILVER, y, incr, true, LK2ND_VERSION);
+	
+	
 	fbcon_flush();
 }
