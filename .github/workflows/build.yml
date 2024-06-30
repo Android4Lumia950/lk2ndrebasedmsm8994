@@ -13,6 +13,7 @@ jobs:
       artifacts: |
         build-*/lk.bin
         build-*/lk2nd.img
+        build-*/*.mbn
   lk2nd:
     needs: lk2nd-msm8916
     uses: ./.github/workflows/lk2nd-matrix.yml
@@ -22,6 +23,7 @@ jobs:
       artifacts: |
         build-*/lk.bin
         build-*/lk2nd.img
+        build-*/*.mbn
 
   lk1st:
     needs: lk2nd
