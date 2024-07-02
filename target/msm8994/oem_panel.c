@@ -52,6 +52,7 @@
 #include "include/panel_hx8379a_truly_fwvga_video.h"
 #include "include/panel_nt35597_wqxga_video.h"
 #include "include/panel_nt35597_wqxga_cmd.h"
+#include "include/panel_duke_cmd.h"
 
 /*---------------------------------------------------------------------------*/
 /* static panel selection variable                                           */
@@ -66,6 +67,7 @@ SHARP_1080P_CMD_PANEL,
 HX8379A_TRULY_FWVGA_VIDEO_PANEL,
 NOVATEK_WQXGA_VIDEO_PANEL,
 NOVATEK_WQXGA_CMD_PANEL,
+DUKE_DUALDSI_CMD_PANEL,
 UNKNOWN_PANEL
 };
 
@@ -83,6 +85,7 @@ static struct panel_list supp_panels[] = {
 	{"hx8379a_truly_fwvga_video", HX8379A_TRULY_FWVGA_VIDEO_PANEL},
 	{"nt35597_wqxga_video", NOVATEK_WQXGA_VIDEO_PANEL},
 	{"nt35597_wqxga_cmd", NOVATEK_WQXGA_CMD_PANEL},
+	{"duke_dualdsi_cmd", DUKE_DUALDSI_CMD_PANEL},
 };
 
 static uint32_t panel_id;
@@ -132,7 +135,7 @@ static bool init_panel_data(struct panel_struct *panelstruct,
 		 * enable ping-pong split and use two pipes for simplicity sake.
 		 */
 		if (platform_is_msm8992())
-			panelstruct->paneldata->panel_operating_mode |= DST_SPLIT_FLAG;
+			panelstruct->paneldata->panel_operating_mode = DST_SPLIT_FLAG | DUAL_DSI_FLAG;
 
 		panelstruct->panelres     = &sharp_wqxga_dualdsi_video_panel_res;
 		panelstruct->color        = &sharp_wqxga_dualdsi_video_color;
@@ -395,6 +398,38 @@ static bool init_panel_data(struct panel_struct *panelstruct,
 		memcpy(&panelstruct->fbcinfo, &nt35597_wqxga_cmd_fbc,
 				sizeof(struct fb_compression));
 		break;
+	case DUKE_DUALDSI_CMD_PANEL:
+		pan_type = PANEL_TYPE_DSI;
+		pinfo->lcd_reg_en = 1;
+		panelstruct->paneldata    = &duke_wqhd_dualdsi_cmd_panel_data;
+
+		panelstruct->paneldata->panel_operating_mode |= DST_SPLIT_FLAG;
+
+		panelstruct->panelres     = &duke_wqhd_dualdsi_cmd_panel_res;
+		panelstruct->color        = &duke_wqhd_dualdsi_cmd_color;
+		panelstruct->videopanel   = &duke_wqhd_dualdsi_cmd_video_panel;
+		panelstruct->commandpanel = &duke_wqhd_dualdsi_cmd_command_panel;
+		panelstruct->state        = &duke_wqhd_dualdsi_cmd_state;
+		panelstruct->laneconfig   = &duke_wqhd_dualdsi_cmd_lane_config;
+		panelstruct->paneltiminginfo
+			= &duke_wqhd_dualdsi_cmd_timing_info;
+		panelstruct->panelresetseq
+					 = &duke_wqhd_dualdsi_cmd_reset_seq;
+		panelstruct->backlightinfo = &duke_wqhd_dualdsi_cmd_backlight;
+
+		pinfo->labibb = &duke_wqhd_dualdsi_cmd_labibb;
+
+		pinfo->mipi.panel_on_cmds
+			= duke_wqhd_dualdsi_cmd_on_command;
+		pinfo->mipi.num_of_panel_on_cmds
+			= DUKE_WQHD_DUALDSI_CMD_ON_COMMAND;
+		pinfo->mipi.panel_off_cmds
+			= duke_wqhd_dualdsi_cmd_off_command;
+		pinfo->mipi.num_of_panel_off_cmds
+			= DUKE_WQHD_DUALDSI_CMD_OFF_COMMAND;
+		memcpy(phy_db->timing,
+			duke_wqhd_dualdsi_cmd_timings, TIMING_SIZE);
+		break;
 	default:
 	case UNKNOWN_PANEL:
 		pan_type = PANEL_TYPE_UNKNOWN;
@@ -437,6 +472,9 @@ int oem_panel_select(const char *panel_name, struct panel_struct *panelstruct,
 		break;
 	case HW_PLATFORM_LIQUID:
 		panel_id = JDI_4K_DUALDSI_VIDEO_PANEL;
+		break;
+	case 26:
+		panel_id = DUKE_DUALDSI_CMD_PANEL;
 		break;
 	default:
 		dprintf(CRITICAL, "Display not enabled for %d HW type\n"
